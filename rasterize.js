@@ -6,8 +6,8 @@ const WIN_LEFT = 0; const WIN_RIGHT = 1;  // default left and right x coords in 
 const WIN_BOTTOM = 0; const WIN_TOP = 1;  // default top and bottom y coords in world space
 const INPUT_TRIANGLES_URL = "https://ncsucgclass.github.io/prog2/triangles.json"; // triangles file loc
 const INPUT_SPHERES_URL = "https://ncsucgclass.github.io/prog2/spheres.json"; // spheres file loc
+const INPUT_CUSTOM_URL = "custom.json"; 
 var Eye = new vec4.fromValues(0.5,0.5,-0.5,1.0); // default eye position in world space
-
 /* webgl globals */
 var gl = null; // the all powerful gl object. It's all here folks!
 var vertexBuffer; // this contains vertex coordinates in triples
@@ -15,6 +15,18 @@ var triangleBuffer; // this contains indices into vertexBuffer in triples
 var triBufferSize = 0; // the number of indices in the triangle buffer
 var vertexPositionAttrib; // where to put position for vertex shader
 var colorBuffer; // this contains vertex colors
+
+
+
+function vars() {
+    /* webgl globals */
+    gl = null; // the all powerful gl object. It's all here folks!
+    vertexBuffer = null; // clear vertex coordinates buffer
+    triangleBuffer = null; // clear indices buffer
+    triBufferSize = 0; // reset the number of indices in the triangle buffer
+    vertexPositionAttrib = null; // clear position attribute for vertex shader
+    colorBuffer = null; // clear vertex colors buffer
+}
 
 
 // ASSIGNMENT HELPER FUNCTIONS
@@ -70,8 +82,8 @@ function setupWebGL() {
 } // end setupWebGL
 
 // read triangles in, load them into webgl buffers
-function loadTriangles() {
-    var inputTriangles = getJSONFile(INPUT_TRIANGLES_URL, "triangles");
+function loadTriangles(input) {
+    var inputTriangles = getJSONFile(input, "triangles");
 
     if (inputTriangles != String.null) {
         var whichSetVert; // index of vertex in current triangle set
@@ -227,15 +239,37 @@ function renderTriangles() {
     gl.drawElements(gl.TRIANGLES, triBufferSize, gl.UNSIGNED_SHORT, 0);
 }
 
+var image = 0;
 
+// Listen for user clicking space
+window.addEventListener("keydown", function(event) {
+    if (event.code === "Space") {
+        vars();
+        if (image == 0) {
+            setupWebGL(); // set up the webGL environment
+            loadTriangles(INPUT_CUSTOM_URL);
+            setupShaders(); // setup the webGL shaders
+            renderTriangles(); // draw the triangles using webGL
+            image = 1;
+        } else {
+            setupWebGL(); // set up the webGL environment
+            loadTriangles(INPUT_TRIANGLES_URL);
+            setupShaders(); // setup the webGL shaders
+            renderTriangles(); // draw the triangles using webGL
+            image = 0;
+        }
+    }
+});
 
 /* MAIN -- HERE is where execution begins after window load */
 
 function main() {
   
+
   setupWebGL(); // set up the webGL environment
-  loadTriangles(); // load in the triangles from tri file
+  loadTriangles(INPUT_TRIANGLES_URL); // load in the triangles from tri file
   setupShaders(); // setup the webGL shaders
   renderTriangles(); // draw the triangles using webGL
   
 } // end main
+
